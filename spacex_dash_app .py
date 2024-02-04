@@ -39,12 +39,16 @@ app.layout = html.Div(children=[html.H1('SpaceX Launch Records Dashboard',
                                 html.Div(dcc.Graph(id='success-pie-chart')),
                                 html.Br(),
 
-                                #html.P("Payload range (Kg):"),
-                                # TASK 3: Add a slider to select payload range
-                                #dcc.RangeSlider(id='payload-slider',...)
+                                html.P("Payload range (Kg):"),
+                                # TASK 3: Add a slider to select payload range                                
+                                dcc.RangeSlider(id='payload-slider',
+                                min=0, max=10000, step=1000,
+                                marks={0: '0 kg',1000: '100kg', 2000:'2000kg', 3000:'3000kg', 4000:'4000kg',5000:'5000kg', 6000:'6000kg' , 7000:'7000kg', 8000:'8000kg',9000:'9000kg'},
+                                value=[2500,7000]),
+                            
 
                                 # TASK 4: Add a scatter chart to show the correlation between payload and launch success
-                                #html.Div(dcc.Graph(id='success-payload-scatter-chart')),
+                                html.Div(dcc.Graph(id='success-payload-scatter-chart'))
                                 ])
 
 # TASK 2:
@@ -80,7 +84,25 @@ def get_pie_chart(entered_site):
 # TASK 4:
 # Add a callback function for `site-dropdown` and `payload-slider` as inputs, `success-payload-scatter-chart` as output
 
-
+@app.callback(Output(component_id='success-payload-scatter-chart', component_property='figure'),
+              Input(component_id='site-dropdown', component_property='value'),
+              Input(component_id='payload-slider', component_property='value')
+              )
+def get_scatter(entered_site,slider_value):    
+    
+    if entered_site == 'ALL':
+        print(spacex_df.columns)
+        fig3=  px.scatter(spacex_df, x="Payload Mass (kg)", y="class")        
+        return fig3        
+    else:
+       filtered_df = pd.DataFrame(spacex_df.loc[spacex_df['Launch Site'] == entered_site]) 
+       print(slider_value) 
+       print(slider_value[0]) 
+       print(slider_value[1]) 
+       filtered_df_payload=pd.DataFrame(filtered_df.loc[filtered_df['Payload Mass (kg)'].between(slider_value[0],slider_value[1])])
+       filtered_df_payload
+       fig4=  px.scatter(filtered_df_payload, x="Payload Mass (kg)", y="class")
+       return fig4
 # Run the app
 if __name__ == '__main__':
     app.run_server()
